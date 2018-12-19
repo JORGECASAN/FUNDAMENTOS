@@ -1,0 +1,140 @@
+---
+title: "PRÁCTICA PROCESOS ESTOCÁSTICOS "
+author: "JORGE CASAN VÁZQUEZ"
+date: "23 de noviembre de 2018"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+# Ejercicio 1
+
+Una compañía aseguradora ha determinado de sus registros pasados, que la probabilidad de que se presente algún parte durante un año es del 20%, si el año anterior no presento ninguno. Mientras que la probabilidad desciende al 5%, si ya había planteado algún parte de daños durante el año anterior. Además, se supone que estas cifras se mantienen estables en el tiempo. Determinar:
+
+#### Apartado a
+#Características generales de la CM (Cadena de Markow)
+
+```{r warning=FALSE}
+library(markovchain)
+
+mt <-matrix(c(0.05,0.95,0.2,0.8), nrow=2, byrow = TRUE)
+cmmt1<- new("markovchain", transitionMatrix=mt, states=c("Parte ", "No Parte"), name="CADENA DE MARKOV")
+cmmt1
+plot(cmmt1)
+```
+Esta es la representación gráfica de la cadena de Markow
+
+## Apartado b
+#Probabilidad de que se presente parte de daños al cabo de 2 años, si en la actualidad no se presentó ninguno
+```{r}
+vectorinicial<- c(0,1)
+etapas <- 2
+estadofinal<- vectorinicial*cmmt1^etapas
+estadofinal
+estadofinal[1,1]
+```
+Existe un 17% de probabilidad de dar un parte al cabo de los 2 años
+
+## Apartado c
+#Probabilidad de que un hogar que ha presentado partes de daños durante el año actual, no presente ninguno al cabo de _n_ años (comportamiento a largo plazo)
+```{r}
+steadyStates(cmmt1)
+```
+Existe un 82,6% de no presentar partes en n años
+
+# Ejercicio 2
+
+Una empresa decide mensualmente si se anuncia en la prensa o en la televisión. Si un mes se anuncia en la prensa, lo hace al mes siguiente con una probabilidad del 70%. Por otra parte, si un mes se anuncia en TV, también lo hará el mes siguiente con una probabilidad del 60%. Si se admite que este comportamiento es estable en el tiempo:
+
+## Apartado a
+#Caracterizar el Proceso Estocástico
+
+```{r}
+ms <- matrix(c(0.6, 0.4, 0.3, 0.7), nrow = 2, byrow = TRUE)
+ms
+cmmst1 <- new("markovchain", transitionMatrix = ms, states = c("TV", "Prensa"), name = "Tipología de anuncio")
+cmmst1
+plot(cmmst1)
+```
+
+## Apartado b
+#Si este mes se anunció en la prensa, calcular la probabilidad de que se anuncie en la prensa al cabo de 2 meses
+
+```{r}
+vector2 <- c(0,1)
+etapas2 <- 2
+final2 <- vector2*(cmmst1^etapas2)
+final2[1,2]
+```
+
+La probabilidad de anunciarse en prensa a los 2 meses es del 61%
+
+## Apartado c
+#Si este mes se anunció en la prensa, calcular la probabilidad de que se anuncie en tv al cabo de 3 meses. Calcule, además, en esas mismas condiciones, la probabilidad de que se anuncie en tv durante dos meses consecutivos
+
+```{r}
+vector3 <- c(0,1)
+etapas3 <- 3
+final3 <- vector3*(cmmst1^etapas3)
+final3[1,1]
+transitionProbability(cmmst1, "TV", "TV")
+```
+
+## Apartado d
+#Estudiar el comportamiento a largo plazo en la empresa
+
+```{r}
+steadyStates(cmmst1)
+```
+El comportamiento a largo plazo en la empresa será con una probabilidad para la TV del 42,85% y de la prensa del 57,14%.
+
+# Ejercicio 3
+
+Si un conductor ha tenido un siniestro la probabilidad de que vuelva a tener otro el año siguiente es del 20%, mientras que, si no ha tenido ninguno este año, la probabilidad de que tampoco tenga un siniestro el próximo es del 70%. Determinar:
+
+## Apartado a
+#Probabilidad de que tenga un accidente el 7º año, suponiendo que en el año inicial no lo tuvo
+
+```{r}
+md <- matrix(c(0.2,0.8,0.3, 0.7), nrow = 2, byrow = TRUE)
+md
+cmmsd <- new("markovchain", transitionMatrix = md, states = c("Accidente", "No accidente"), name = "Siniestralidad")
+
+vector4 <- c(0,1)
+etapas4 <- 7
+estadofinal4 <-vector4*(cmmsd^etapas4)
+estadofinal4[1,1]
+```
+Habrá un 27,27% de probabilidades de que lo tenga en el año 7
+
+## Apartado b
+#Probabilidad de que no tenga ningún accidente el año n-ésimo, suponiendo que en el año inicial no lo tuvo
+
+```{r}
+steadyStates(cmmsd)
+```
+La probabilidad de que no tenga ningún accidente en el año n-ésimo, suponiendi que el año inciial no lo tuvo es de 72,72%
+
+## Apartado c
+#Si este año no ha tenido ningún accidente ¿cuál es la probabilidad de que, al cabo de 5 años, no tenga ningún accidente durante 3 años consecutivos?
+```{r}
+vectorinicialc<- c(0,1)
+etapas5 <- 5
+estadofinal5<- vectorinicialc*cmmsd^etapas5
+estadofinal5
+estadofinal5[1,2]
+#61,25% de probabilidad de que al cabo de 5 años no tenga ningún accidente.
+```
+#La probabilidad de que no presente ninún accidente al cabo de 5 años es de 72,72%
+#La probabilidad de que no presente ningún accidente al cabo de 5 años, durante 3 meses consecutivos se reduce considerablemente a 14,85%.
+
+
+##Apartado d
+#Analice la probabilidad de que sufra o no accidentes a largo plazo, en relación con las posibles situaciones iniciales
+```{r}
+conditionalDistribution(cmmsd, "Accidente")
+conditionalDistribution(cmmsd, "No accidente")
+```
+Esta sería la distribución de probabilidad de que sufra o no accidentes a largo plazo, para calcularlo tendremos que realizar una distribución condicional de la probabilidad en función de los estados.
